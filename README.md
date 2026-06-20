@@ -5,7 +5,7 @@ Lightweight localization for Unity 6+. Load from **JSON** or **ScriptableObjects
 ## Installation
 
 ```
-https://github.com/knabsiraphop/kidzdev-unity-localization.git#v1.0.0
+https://github.com/knabsiraphop/kidzdev-unity-localization.git#v1.0.1
 ```
 
 Requires UniTask (OpenUPM: `com.cysharp.unitask`).

@@ -1,6 +1,6 @@
 {
   "name": "com.kidzdev.unity.localization",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "KidzDev Unity Localization",
   "description": "Lightweight localization system with UniTask async loading. Supports JSON and ScriptableObject data sources, plug-in custom loaders, and auto-refreshing TMP_Text components.",
   "unity": "6000.0",

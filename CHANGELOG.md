@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-06-20
+
+### Fixed
+- `LoadAsync` now cancels any in-flight load for a different language and joins if the same language is already loading, eliminating the async language-switch race condition.
+- `CurrentLanguage` and the internal container are updated only after a successful, non-cancelled load (previously set before the load completed).
+- `LoadSync` likewise sets `CurrentLanguage` after the load, not before.
+- `Release` cancels the in-flight `CancellationTokenSource`.
+
+### Added
+- `LICENSE.md` (MIT) — was missing from the package.
+- Demo scene split into two panels: **GetText** (manual) on the left, **LocalizationHandler** (auto-refresh) on the right, with three pre-configured TMP_Text rows and a change-counter label showing `OnLanguageChanged` fire count.
+- Demo controller subscribes to `OnLanguageChanged` to increment a counter.
+
 ## [1.0.0] - 2026-06-20
 
 ### Changed
