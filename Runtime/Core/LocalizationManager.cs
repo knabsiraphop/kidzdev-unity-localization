@@ -23,6 +23,11 @@ namespace KidzDev.Unity.Localization {
         readonly Dictionary<string, Source> _sources = new();
         readonly LocalizationContainer _container = new();
 
+        UniTask _loadTask;
+        bool _isLoading;
+        CancellationTokenSource _loadCts;
+        GameLanguage _loadingLanguage;
+
         public GameLanguage CurrentLanguage { get; private set; } = GameLanguage.English;
 
         public MissingKeyMode MissingKeyMode { get; set; } = MissingKeyMode.BracketedKey;
@@ -47,24 +52,48 @@ namespace KidzDev.Unity.Localization {
 
         /// <summary>Loads all sources synchronously for <paramref name="language"/>.</summary>
         public void LoadSync(GameLanguage language) {
-            CurrentLanguage = language;
             _container.Clear();
             foreach (var (_, source) in _sources)
                 LoadSourceSync(source, language);
+            CurrentLanguage = language;
         }
 
         /// <summary>Loads all sources in parallel for <paramref name="language"/>.</summary>
         public async UniTask LoadAsync(GameLanguage language, CancellationToken ct = default) {
-            CurrentLanguage = language;
+            // Join an in-flight load for the same language rather than racing it.
+            if (_isLoading && _loadingLanguage == language) {
+                await _loadTask;
+                return;
+            }
+
+            // Cancel any previous in-flight load for a different language.
+            _loadCts?.Cancel();
+            _loadCts?.Dispose();
+            _loadCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+
+            _loadingLanguage = language;
+            _isLoading = true;
+            _loadTask = LoadAsyncCore(language, _loadCts.Token);
+            try {
+                await _loadTask;
+            } finally {
+                _isLoading = false;
+            }
+        }
+
+        async UniTask LoadAsyncCore(GameLanguage language, CancellationToken ct) {
             var tasks = new List<UniTask<IReadOnlyList<LocalizationEntry>>>(_sources.Count);
             foreach (var (_, source) in _sources)
                 tasks.Add(LoadSourceAsync(source, language, ct));
 
             var results = await UniTask.WhenAll(tasks);
+
+            // Only commit if not cancelled — avoids partial-language state.
+            ct.ThrowIfCancellationRequested();
             _container.Clear();
-            foreach (var entries in results) {
-                if (entries != null) _container.Add(entries);
-            }
+            foreach (var entries in results)
+                _container.Add(entries);
+            CurrentLanguage = language;
         }
 
         // ── Language switch (load + fire event) ──────────────────────────────────────
@@ -124,7 +153,13 @@ namespace KidzDev.Unity.Localization {
 
         // ── Release ───────────────────────────────────────────────────────────────────
 
-        public void Release() => _container.Clear();
+        public void Release() {
+            _loadCts?.Cancel();
+            _loadCts?.Dispose();
+            _loadCts = null;
+            _isLoading = false;
+            _container.Clear();
+        }
 
         public void Dispose() => Release();
 
@@ -152,7 +187,7 @@ namespace KidzDev.Unity.Localization {
                 throw;
             } catch (Exception ex) {
                 Debug.LogError($"[Localization] Failed to load '{path}': {ex.Message}");
-                return null;
+                return Array.Empty<LocalizationEntry>();
             }
         }
     }
