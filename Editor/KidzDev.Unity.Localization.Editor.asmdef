@@ -1,0 +1,9 @@
+{
+  "name": "KidzDev.Unity.Localization.Editor",
+  "rootNamespace": "KidzDev.Unity.Localization.Editor",
+  "references": [
+    "KidzDev.Unity.Localization"
+  ],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}

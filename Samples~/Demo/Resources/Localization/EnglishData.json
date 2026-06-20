@@ -1,0 +1,9 @@
+[
+  { "key": "greeting",  "content": "Hello!" },
+  { "key": "farewell",  "content": "Goodbye!" },
+  { "key": "app_name",  "content": "Localization Demo" },
+  { "key": "language",  "content": "English" },
+  { "key": "load_sync", "content": "Load Sync" },
+  { "key": "load_async","content": "Load Async" },
+  { "key": "release",   "content": "Release" }
+]

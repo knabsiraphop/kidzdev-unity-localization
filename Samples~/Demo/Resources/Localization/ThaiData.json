@@ -1,0 +1,9 @@
+[
+  { "key": "greeting",  "content": "สวัสดี!" },
+  { "key": "farewell",  "content": "ลาก่อน!" },
+  { "key": "app_name",  "content": "ตัวอย่างการแปล" },
+  { "key": "language",  "content": "ไทย" },
+  { "key": "load_sync", "content": "โหลดแบบ Sync" },
+  { "key": "load_async","content": "โหลดแบบ Async" },
+  { "key": "release",   "content": "ล้างข้อมูล" }
+]

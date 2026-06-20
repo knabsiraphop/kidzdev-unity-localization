@@ -1,0 +1,9 @@
+{
+  "name": "KidzDev.Unity.Localization",
+  "rootNamespace": "KidzDev.Unity.Localization",
+  "references": [
+    "UniTask",
+    "Unity.TextMeshPro"
+  ],
+  "autoReferenced": true
+}
