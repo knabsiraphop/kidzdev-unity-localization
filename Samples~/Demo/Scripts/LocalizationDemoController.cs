@@ -5,23 +5,49 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-/// Walks through the localization workflow:
-/// <c>Configure()</c> from settings → <c>SetLanguage</c> (sync or async) → <c>GetText</c> → <c>Release</c>.
-/// The five buttons are wired to the public On* methods in the scene.
+/// Demonstrates three things:
+///   1. Manual GetText — call SetLanguage then read keys yourself (output panel).
+///   2. LocalizationHandler — TMP_Text components with the handler attached refresh
+///      automatically on OnLanguageChanged with no code here at all.
+///   3. OnLanguageChanged event — subscribe in code to react to language switches
+///      (used here to drive the change-count label).
 /// </summary>
 public sealed class LocalizationDemoController : MonoBehaviour {
+    [Header("Manual GetText output")]
     [SerializeField] TMP_Text _statusText;
     [SerializeField] TMP_Text _outputText;
 
-    // Keys shown in the output panel. "missing_key" demonstrates MissingKeyMode.
+    [Header("LocalizationHandler — auto-refresh (no code needed)")]
+    [SerializeField] TMP_Text _handlerGreeting;  // LocalizationHandler(key=greeting) attached in scene
+    [SerializeField] TMP_Text _handlerFarewell;  // LocalizationHandler(key=farewell) attached in scene
+    [SerializeField] TMP_Text _handlerLanguage;  // LocalizationHandler(key=language)  attached in scene
+
+    [Header("OnLanguageChanged event")]
+    [SerializeField] TMP_Text _changeCountLabel;
+
     static readonly string[] DemoKeys = { "greeting", "farewell", "app_name", "language", "missing_key" };
 
+    int _changeCount;
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────────────
+
     void Start() {
-        LocalizationSystem.Configure();   // reads Resources/LocalizationSettings
+        LocalizationSystem.Configure();
         Report("Configured. Press a button to load.");
     }
 
-    // ── Button handlers (wired in scene) ─────────────────────────────────────────
+    void OnEnable()  => LocalizationSystem.OnLanguageChanged += OnLanguageChanged;
+    void OnDisable() => LocalizationSystem.OnLanguageChanged -= OnLanguageChanged;
+
+    // ── OnLanguageChanged callback ────────────────────────────────────────────────
+
+    void OnLanguageChanged() {
+        _changeCount++;
+        if (_changeCountLabel != null)
+            _changeCountLabel.text = $"OnLanguageChanged fired  ×{_changeCount}";
+    }
+
+    // ── Button handlers ───────────────────────────────────────────────────────────
 
     public void OnEnglishSync()  => LoadSync(GameLanguage.English);
     public void OnThaiSync()     => LoadSync(GameLanguage.Thai);
@@ -33,7 +59,7 @@ public sealed class LocalizationDemoController : MonoBehaviour {
         Report("Released — all entries cleared.");
     }
 
-    // ── Workflow ─────────────────────────────────────────────────────────────────
+    // ── Workflow ──────────────────────────────────────────────────────────────────
 
     void LoadSync(GameLanguage language) {
         LocalizationSystem.SetLanguageSync(language);
@@ -41,12 +67,12 @@ public sealed class LocalizationDemoController : MonoBehaviour {
     }
 
     async UniTaskVoid LoadAsync(GameLanguage language) {
-        Report($"Loading {language} (async)…");
+        Report($"Loading {language} async…");
         await LocalizationSystem.SetLanguageAsync(language, this.GetCancellationTokenOnDestroy());
         Report($"Loaded {language} (async).");
     }
 
-    // ── Output ───────────────────────────────────────────────────────────────────
+    // ── Output ────────────────────────────────────────────────────────────────────
 
     void Report(string status) {
         if (_statusText != null) _statusText.text = status;
